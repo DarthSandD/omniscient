@@ -28,6 +28,8 @@ class ChatActivity : AppCompatActivity(), VoiceManager.Callback {
     private lateinit var store: ConversationStore
     private lateinit var repo: ChatRepository
     private lateinit var voice: VoiceManager
+    private lateinit var memory: MemoryStore
+    private lateinit var tools: AgentTools
     private var tts: TtsManager? = null
     private lateinit var conv: Conversation
     private var pendingVoice = false
@@ -39,6 +41,8 @@ class ChatActivity : AppCompatActivity(), VoiceManager.Callback {
         prefs = Prefs(this)
         store = ConversationStore(this)
         repo = ChatRepository(prefs)
+        memory = MemoryStore(this)
+        tools = AgentTools(prefs, memory)
         voice = VoiceManager(this).apply { callback = this@ChatActivity }
         tts = runCatching { TtsManager(this) }.getOrNull()
 
@@ -84,6 +88,7 @@ class ChatActivity : AppCompatActivity(), VoiceManager.Callback {
 
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, results: IntArray) {
         super.onRequestPermissionsResult(code, perms, results)
+        if (PermissionGate.onResult(code, results.firstOrNull() == PackageManager.PERMISSION_GRANTED)) return
         if (code == 101 && pendingVoice) {
             pendingVoice = false
             if (results.firstOrNull() == PackageManager.PERMISSION_GRANTED) toggleVoice()
@@ -108,7 +113,21 @@ class ChatActivity : AppCompatActivity(), VoiceManager.Callback {
         box.addView(thinking)
         scrollToBottom()
         lifecycleScope.launch {
-            when (val res = repo.complete(conv.messages)) {
+            // Offline intents first: work with no key and no network on any phone.
+            val offline = OfflineIntents.tryHandle(this@ChatActivity, tools, prompt)
+            if (offline != null) {
+                box.removeView(thinking)
+                val reply = Message("assistant", offline)
+                conv.messages.add(reply)
+                addCard(reply)
+                persist()
+                if (prefs.speakReplies) tts?.speak(offline)
+                scrollToBottom()
+                return@launch
+            }
+            when (val res = repo.runAgent(conv.messages, AgentTools.systemPrompt(memory.facts())) { name, args ->
+                tools.run(this@ChatActivity, name, args)
+            }) {
                 is ChatResult.Ok -> {
                     box.removeView(thinking)
                     val reply = Message("assistant", res.text)

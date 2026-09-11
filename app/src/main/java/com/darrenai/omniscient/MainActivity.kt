@@ -26,6 +26,8 @@ class MainActivity : AppCompatActivity(), VoiceManager.Callback {
     private lateinit var store: ConversationStore
     private lateinit var repo: ChatRepository
     private lateinit var voice: VoiceManager
+    private lateinit var memory: MemoryStore
+    private lateinit var tools: AgentTools
     private var tts: TtsManager? = null
     private var conversation: Conversation? = null
     private var pendingVoice = false
@@ -37,6 +39,8 @@ class MainActivity : AppCompatActivity(), VoiceManager.Callback {
         prefs = Prefs(this)
         store = ConversationStore(this)
         repo = ChatRepository(prefs)
+        memory = MemoryStore(this)
+        tools = AgentTools(prefs, memory)
         voice = VoiceManager(this).apply { callback = this@MainActivity }
         tts = runCatching { TtsManager(this) }.getOrNull()?.apply {
             onStart = { runOnUiThread { setState(OrbState.SPEAKING) } }
@@ -64,6 +68,19 @@ class MainActivity : AppCompatActivity(), VoiceManager.Callback {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
         setState(OrbState.IDLE)
+        if (!prefs.onboarded) {
+            prefs.onboarded = true
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Welcome to Omniscient")
+                .setMessage(
+                    "I work on ANY phone — nothing here needs Darren's PC or Wi-Fi.\n\n" +
+                    "To unlock full AI chat, open Settings (gear) and enter any OpenAI-compatible API key " +
+                    "(endpoint + key + model). No key yet? I'm still useful right now — try:\n" +
+                    "• “what time is it”\n• “battery status”\n• “open calculator”\n• “flashlight on”\n• “remember my coffee order is…”"
+                )
+                .setPositiveButton("Got it", null)
+                .show()
+        }
     }
 
     private fun setState(s: OrbState) {
@@ -104,6 +121,7 @@ class MainActivity : AppCompatActivity(), VoiceManager.Callback {
 
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, results: IntArray) {
         super.onRequestPermissionsResult(code, perms, results)
+        if (PermissionGate.onResult(code, results.firstOrNull() == PackageManager.PERMISSION_GRANTED)) return
         if (code == 100 && pendingVoice) {
             pendingVoice = false
             if (results.firstOrNull() == PackageManager.PERMISSION_GRANTED) toggleVoice()
@@ -135,7 +153,19 @@ class MainActivity : AppCompatActivity(), VoiceManager.Callback {
         c.messages.add(Message("user", prompt))
         setState(OrbState.THINKING)
         lifecycleScope.launch {
-            when (val res = repo.complete(c.messages)) {
+            // Offline intents first: work with no key and no network on any phone.
+            val offline = OfflineIntents.tryHandle(this@MainActivity, tools, prompt)
+            if (offline != null) {
+                c.messages.add(Message("assistant", offline))
+                heardText.text = offline
+                store.save(c.copy(title = ConversationStore.titleFor(c.messages)))
+                setState(OrbState.IDLE)
+                if (prefs.speakReplies) tts?.speak(offline)
+                return@launch
+            }
+            when (val res = repo.runAgent(c.messages, AgentTools.systemPrompt(memory.facts())) { name, args ->
+                tools.run(this@MainActivity, name, args)
+            }) {
                 is ChatResult.Ok -> {
                     c.messages.add(Message("assistant", res.text))
                     heardText.text = res.text

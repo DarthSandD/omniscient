@@ -17,6 +17,13 @@
             android:layout_height="wrap_content"
             android:text="UPLINK CONFIGURATION" />
 
+        <Button
+            android:id="@+id/omniRouteButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="USE OMNIROUTE PRESET (DARREN'S LAN)" />
+
         <TextView
             style="@style/HudStatus"
             android:layout_width="wrap_content"
@@ -69,6 +76,44 @@
             android:layout_marginTop="4dp"
             android:background="@drawable/input_bg"
             android:inputType="text"
+            android:padding="14dp"
+            android:textColor="@color/ghost_white"
+            android:textColorHint="@color/muted"
+            android:textSize="15sp" />
+
+        <TextView
+            style="@style/HudStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="SEARCH API BASE URL (OPTIONAL)" />
+
+        <EditText
+            android:id="@+id/searchEndpointInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/input_bg"
+            android:inputType="textUri"
+            android:padding="14dp"
+            android:textColor="@color/ghost_white"
+            android:textColorHint="@color/muted"
+            android:textSize="15sp" />
+
+        <TextView
+            style="@style/HudStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="SEARCH API KEY (OPTIONAL)" />
+
+        <EditText
+            android:id="@+id/searchApiKeyInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/input_bg"
+            android:inputType="textPassword"
             android:padding="14dp"
             android:textColor="@color/ghost_white"
             android:textColorHint="@color/muted"
