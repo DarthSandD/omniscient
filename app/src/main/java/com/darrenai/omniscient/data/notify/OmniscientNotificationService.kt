@@ -1,4 +1,4 @@
-package com.darrenai.omniscient
+package com.darrenai.omniscient.data.notify
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification

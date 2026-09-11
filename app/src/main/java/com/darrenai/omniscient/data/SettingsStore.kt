@@ -1,10 +1,14 @@
-package com.darrenai.omniscient
+package com.darrenai.omniscient.data
 
 import android.content.Context
 import android.content.SharedPreferences
 
-/** Backend + voice settings. Defaults point at OpenAI; any OpenAI-compatible URL works. */
-class Prefs(context: Context) {
+/**
+ * Backend + voice settings. Same prefs file and keys as v2 ("omniscient"),
+ * so upgrading keeps the user's endpoint, key, model and flags.
+ * Defaults point at OpenAI; any OpenAI-compatible URL works.
+ */
+class SettingsStore(context: Context) {
     private val sp: SharedPreferences =
         context.applicationContext.getSharedPreferences("omniscient", Context.MODE_PRIVATE)
 

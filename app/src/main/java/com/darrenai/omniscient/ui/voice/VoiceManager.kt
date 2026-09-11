@@ -1,4 +1,4 @@
-package com.darrenai.omniscient
+package com.darrenai.omniscient.ui.voice
 
 import android.content.Context
 import android.content.Intent
@@ -29,13 +29,13 @@ class VoiceManager(private val context: Context) {
     fun startListening() {
         if (listening) return
         if (!isAvailable) {
-            callback?.onError("Speech recognition not available on this device — type instead.")
+            callback?.onError("Speech recognition not available on this device, boss — type instead.")
             return
         }
         stopListening()
         val rec = runCatching { SpeechRecognizer.createSpeechRecognizer(context) }.getOrNull()
         if (rec == null) {
-            callback?.onError("Could not start the microphone — type instead.")
+            callback?.onError("Could not start the microphone, boss — type instead.")
             return
         }
         recognizer = rec
@@ -59,7 +59,7 @@ class VoiceManager(private val context: Context) {
                 listening = false
                 val list = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 val text = list?.firstOrNull()?.trim().orEmpty()
-                if (text.isBlank()) callback?.onError("Didn't catch that — try again or type.")
+                if (text.isBlank()) callback?.onError("Didn't catch that, boss — try again or type.")
                 else callback?.onResult(text)
             }
             override fun onPartialResults(partial: Bundle?) {
@@ -70,7 +70,7 @@ class VoiceManager(private val context: Context) {
         })
         runCatching { rec.startListening(intent) }.onFailure {
             listening = false
-            callback?.onError("Microphone failed to start — type instead.")
+            callback?.onError("Microphone failed to start, boss — type instead.")
             return
         }
         listening = true
@@ -89,12 +89,13 @@ class VoiceManager(private val context: Context) {
     companion object {
         fun friendlyError(code: Int): String = when (code) {
             SpeechRecognizer.ERROR_NO_MATCH,
-            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Didn't catch that — try again or type."
-            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission denied — type instead, or allow it in system settings."
+            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Didn't catch that, boss — try again or type."
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ->
+                "Microphone permission denied, boss — type instead, or allow it in system settings."
             SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT ->
-                "Voice service needs network — type instead."
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Voice engine busy — wait a moment and retry."
-            else -> "Voice input failed — type instead."
+                "Voice service needs network, boss — type instead."
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Voice engine busy, boss — wait a moment and retry."
+            else -> "Voice input failed, boss — type instead."
         }
     }
 }

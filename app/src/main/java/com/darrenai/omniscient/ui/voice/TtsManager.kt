@@ -1,4 +1,4 @@
-package com.darrenai.omniscient
+package com.darrenai.omniscient.ui.voice
 
 import android.content.Context
 import android.os.Bundle
@@ -39,8 +39,7 @@ class TtsManager(context: Context) {
         if (!ready || engine == null) return
         runCatching {
             engine.stop()
-            val params = Bundle()
-            engine.speak(text, TextToSpeech.QUEUE_FLUSH, params, UUID.randomUUID().toString())
+            engine.speak(text, TextToSpeech.QUEUE_FLUSH, Bundle(), UUID.randomUUID().toString())
         }
     }
 

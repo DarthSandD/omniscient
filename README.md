@@ -1,82 +1,66 @@
-# Omniscient
+# Omniscient v3 — the butler in the phone
 
-Voice-first Android AI assistant with a JARVIS-style HUD. Talks to any
-OpenAI-compatible `/chat/completions` endpoint (default: OpenAI `gpt-4o-mini`
-with your own key). Works on ANY phone — no PC, Termux, ADB, or same-WiFi needed.
+Voice-first agentic assistant for Android. Speaks and types like a butler ("boss"),
+acts through 15 real device tools, shows its work live in a command terminal.
 
-## Features (v2.0.0)
+## Architecture (clean layers, no God-files)
 
-- Voice input via `SpeechRecognizer` (partial results + text fallback), TTS replies
-- **Agentic tool-calling loop**: OpenAI-compatible `tools`/`tool_calls`, up to 5
-  rounds, with automatic fallback to plain chat if the model rejects tools
-- **Real device tools**: open app by name, alarm, timer, flashlight, Wi-Fi,
-  Bluetooth, phone call, SMS, notifications, time, battery, coarse location,
-  remember/forget memory, web search (optional, only if configured)
-- **Offline rule-based intents** (no key, no network): flashlight, time/date,
-  battery, open-app, remember/forget — parsed on-device before the LLM is tried
-- **Local memory** (`memory.json`): durable user facts, injected into every system prompt
-- **Settings**: endpoint + key + model, one-tap **OmniRoute preset**
-  (optional extra for Darren's LAN `http://10.212.104.124:20128/v1`, key `x`,
-  model `default`), optional SEARCH API base + key, voice toggle
-- **First-launch onboarding**: one screen explains key setup; offline intents + TTS
-  work before any key is entered
-- Conversation list persisted as JSON; custom launcher icon; dark HUD theme
-- `minSdk 26`, package `com.darrenai.omniscient`
+```
+ui/        screens — one Activity + one ViewModel each, orb view, voice wrappers
+  home/        HomeActivity + HomeViewModel (holographic core, quick orders)
+  chat/        ChatActivity + ChatViewModel (full session, glass cards)
+  history/     HistoryActivity + HistoryViewModel (dossier of sessions)
+  terminal/    TerminalActivity + TerminalViewModel (live tool-call log)
+  settings/    SettingsActivity + SettingsViewModel (uplink config)
+  onboarding/  OnboardingActivity + OnboardingViewModel (first run)
+  orb/         HoloOrbView (Canvas hologram: halo, scan sweep, particles)
+  voice/       VoiceManager (SpeechRecognizer), TtsManager
+domain/      models, Persona (butler lines), AgentLog (event bus),
+             repository interfaces, SendMessageUseCase (offline → agent loop)
+data/        SettingsStore, FileConversations, FileMemory, OpenAiService,
+             tools/ (DeviceTools ×15, ToolCatalog, OfflineIntents, PermissionGate),
+             notify/ (notification-listener capture)
+```
 
-### Tool reality table
+`OmniApp` is the composition root; `OmniViewModels` factory injects collaborators.
+The agent loop lives in `domain/SendMessageUseCase` (max 5 rounds); the wire
+lives in `data/OpenAiService`. No org.json in domain.
 
-| Tool | Status |
-|---|---|
-| get_time, get_battery | REAL, no permission |
-| open_app | REAL (launcher fuzzy-match; no special permission) |
-| set_alarm, set_timer | REAL (AlarmClock intents; needs a clock app) |
-| toggle_flashlight | REAL (CameraManager; CAMERA runtime perm) |
-| make_call | REAL (ACTION_CALL; CALL_PHONE perm + chat confirm + Yes/No dialog) |
-| send_sms | REAL (SmsManager; SEND_SMS perm + chat confirm + Yes/No dialog) |
-| read_notifications | REAL via NotificationListenerService; returns setup steps until enabled |
-| get_location | REAL, permission-gated coarse last-known fix (may be stale/empty) |
-| toggle_bluetooth | REAL attempt (enable = system prompt; disable may be refused on Android 13+) |
-| toggle_wifi | OS-LIMITED: Android 10+ forbids app toggling → opens Wi-Fi panel instead |
-| remember / forget | REAL (local `memory.json`) |
-| web_search | GUARDED: disabled message unless Settings → SEARCH API is configured |
+## Features
 
-### No-API-key behaviour
-
-- Default (OpenAI endpoint): guided error — open Settings and add a key.
-- Custom endpoint (e.g. OmniRoute preset): request is sent **without** an
-  Authorization header, so keyless local proxies just work.
-- Either way, offline intents (flashlight/time/battery/open-app/memory) always work.
-
-### Permissions declared vs used
-
-Declared AND used at runtime (each asked only when its tool runs):
-`CALL_PHONE`, `SEND_SMS`, `CAMERA`, `ACCESS_COARSE_LOCATION`,
-`ACCESS_WIFI_STATE` (read state pre-Android 10), `CHANGE_WIFI_STATE` (pre-10 toggle),
-`BLUETOOTH`/`BLUETOOTH_ADMIN` (maxSdk 30), `BLUETOOTH_CONNECT` (Android 12+ disable).
-Notification access is a system Settings toggle, not a manifest permission.
-No `QUERY_ALL_PACKAGES` — app discovery uses a `<queries>` launcher-intent block.
-
-### Deliberately left out of v2 (reasons)
-
-- Wake-word / hotword: still needs a Porcupine-style model + foreground service.
-- On-device LLM/STT: 100MB+ natives, device-compat risk; server endpoint instead.
-- Direct Wi-Fi toggle on Android 10+: blocked by the OS itself; panel fallback.
-- Exact GPS fix: coarse last-known only; live fix needs a foreground service.
-- Wear OS / widgets: out of scope.
+- Agent loop with function tools (OpenAI-compatible `/chat/completions`)
+- 15 device tools: time, battery, location, open_app, alarm, timer, flashlight,
+  wifi, bluetooth, call, SMS, notifications, remember, forget, web_search
+- Offline intents (flashlight/time/battery/apps/memory) — no key, no network
+- Memory: durable user facts injected into the system prompt
+- Endpoint settings + one-tap OmniRoute preset (house LAN, keyless)
+- Onboarding screen on first run (settings preserved across upgrades)
+- Command terminal: every user turn + tool call logged live via AgentLog
+- Butler persona: deterministic rotating acknowledgments, "boss" address,
+  voice (TTS) + text fallback on every screen
 
 ## Build
 
-Real Gradle 8.5 (the `gradlew` wrapper is not used):
+Real Gradle only (wrapper is corrupt — never use `gradlew`):
 
-```sh
-export ANDROID_HOME="C:/Users/USER/AppData/Local/Android/Sdk"
-C:/Users/USER/gradle-8.5/bin/gradle :app:assembleDebug
+```
+C:/Users/USER/gradle-8.5/bin/gradle assembleDebug
+C:/Users/USER/gradle-8.5/bin/gradle assembleRelease   # signed; needs RELEASE_* in
+                                                      # UNTRACKED local gradle.properties
 ```
 
-APK: `app/build/outputs/apk/debug/app-debug.apk`
+Verify: `aapt dump badging app/build/outputs/apk/...apk` (+ `apksigner verify`
+for release). Secrets (`*.keystore`, `.keystore-pass`, local `gradle.properties`)
+are git-ignored and never committed.
 
-Verify:
+## References studied
 
-```sh
-C:/Users/USER/AppData/Local/Android/Sdk/build-tools/34.0.0/aapt dump badging app/build/outputs/apk/debug/app-debug.apk
-```
+- VarsshanCoder/JARVIS-OS (Kotlin+FastAPI agent, memory, tool calling)
+- patil-shubham-dev/Jarvis-Ai (voice + automation, multi-agent)
+- lucadeg/opendroid (self-planning agent, glassmorphic design)
+- prashantshukla01/Jarvis_Ironman (holographic orb interface)
+
+Influence, not vendored code: on-device agent loop + memory (JARVIS-OS),
+terminal transparency + glass cards (opendroid), orb hero (Ironman).
+Accessibility-driven screen control (opendroid/Jarvis-Ai) was deliberately
+left out — high Play-policy risk, low payoff vs the tool API.

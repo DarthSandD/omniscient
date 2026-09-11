@@ -38,7 +38,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/input_bg"
+            android:background="@drawable/glass_input"
             android:hint="@string/hint_text"
             android:inputType="textMultiLine"
             android:padding="14dp"
@@ -79,4 +79,11 @@
             android:layout_weight="1"
             android:text="READ ALOUD" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/chatTerminal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="WATCH THE TERMINAL" />
 </LinearLayout>

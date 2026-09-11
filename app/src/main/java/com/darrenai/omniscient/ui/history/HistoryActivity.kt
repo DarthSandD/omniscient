@@ -1,4 +1,4 @@
-package com.darrenai.omniscient
+package com.darrenai.omniscient.ui.history
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,41 +7,48 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.darrenai.omniscient.R
+import com.darrenai.omniscient.ui.chat.ChatActivity
+import com.darrenai.omniscient.ui.omniViewModel
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
 
-/** Saved conversation list; tap to reopen, long-press to delete. */
-class ConversationsActivity : AppCompatActivity() {
+/** Dossier: saved sessions. Tap to reopen, long-press to shred. */
+class HistoryActivity : AppCompatActivity() {
 
+    private val vm: HistoryViewModel by omniViewModel()
     private lateinit var box: LinearLayout
     private lateinit var emptyText: TextView
-    private lateinit var store: ConversationStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_conversations)
-        store = ConversationStore(this)
+        setContentView(R.layout.activity_history)
         box = findViewById(R.id.convBox)
         emptyText = findViewById(R.id.emptyText)
         findViewById<Button>(R.id.newConvButton).setOnClickListener {
             startActivity(Intent(this, ChatActivity::class.java))
         }
+        lifecycleScope.launch {
+            vm.items.collect { render() }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        render()
+        vm.refresh()
     }
 
     private fun render() {
+        val list = vm.items.value
         box.removeAllViews()
-        val list = store.list()
         emptyText.visibility = if (list.isEmpty()) TextView.VISIBLE else TextView.GONE
         val fmt = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
         for (c in list) {
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
-                setBackgroundResource(R.drawable.card_assistant)
+                setBackgroundResource(R.drawable.glass_assistant)
                 setPadding(28, 24, 28, 24)
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -52,7 +59,7 @@ class ConversationsActivity : AppCompatActivity() {
                 gravity = Gravity.START
             }
             val title = TextView(this).apply {
-                text = c.title.ifBlank { "Conversation" }
+                text = c.title.ifBlank { "Session" }
                 setTextColor(0xFFD6F4FF.toInt())
                 textSize = 16f
             }
@@ -70,8 +77,7 @@ class ConversationsActivity : AppCompatActivity() {
                 )
             }
             card.setOnLongClickListener {
-                store.delete(c.id)
-                render()
+                vm.delete(c.id)
                 true
             }
             box.addView(card)

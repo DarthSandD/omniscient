@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="USE OMNIROUTE PRESET (DARREN'S LAN)" />
+            android:text="USE OMNIROUTE PRESET (HOUSE LAN)" />
 
         <TextView
             style="@style/HudStatus"
@@ -36,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:background="@drawable/input_bg"
+            android:background="@drawable/glass_input"
             android:inputType="textUri"
             android:padding="14dp"
             android:textColor="@color/ghost_white"
@@ -55,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:background="@drawable/input_bg"
+            android:background="@drawable/glass_input"
             android:inputType="textPassword"
             android:padding="14dp"
             android:textColor="@color/ghost_white"
@@ -74,7 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:background="@drawable/input_bg"
+            android:background="@drawable/glass_input"
             android:inputType="text"
             android:padding="14dp"
             android:textColor="@color/ghost_white"
@@ -93,7 +93,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:background="@drawable/input_bg"
+            android:background="@drawable/glass_input"
             android:inputType="textUri"
             android:padding="14dp"
             android:textColor="@color/ghost_white"
@@ -112,7 +112,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:background="@drawable/input_bg"
+            android:background="@drawable/glass_input"
             android:inputType="textPassword"
             android:padding="14dp"
             android:textColor="@color/ghost_white"
@@ -138,17 +138,16 @@
             android:id="@+id/saveButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="SAVE" />
+            android:layout_marginTop="20dp"
+            android:text="SAVE UPLINK" />
 
         <TextView
             android:id="@+id/savedNote"
+            style="@style/HudStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:text=""
-            android:textColor="@color/arc_cyan"
-            android:textSize="13sp" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:text="" />
     </LinearLayout>
 </ScrollView>
