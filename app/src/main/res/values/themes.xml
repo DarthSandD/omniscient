@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Omniscient" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/arc_cyan</item>
+        <item name="colorPrimaryVariant">@color/arc_cyan_dim</item>
+        <item name="colorOnPrimary">@color/void_black</item>
+        <item name="colorSecondary">@color/gold</item>
+        <item name="android:colorBackground">@color/void_black</item>
+        <item name="colorSurface">@color/panel</item>
+        <item name="colorOnSurface">@color/ghost_white</item>
+        <item name="android:textColorPrimary">@color/ghost_white</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+        <item name="android:windowBackground">@color/void_black</item>
+        <item name="android:statusBarColor">@color/void_black</item>
+        <item name="android:navigationBarColor">@color/void_black</item>
+    </style>
+
+    <style name="HudHeader">
+        <item name="android:textColor">@color/arc_cyan</item>
+        <item name="android:letterSpacing">0.35</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="HudTitle">
+        <item name="android:textColor">@color/ghost_white</item>
+        <item name="android:letterSpacing">0.18</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="HudStatus">
+        <item name="android:textColor">@color/gold</item>
+        <item name="android:letterSpacing">0.22</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+</resources>

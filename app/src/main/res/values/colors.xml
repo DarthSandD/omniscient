@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="void_black">#05080D</color>
+    <color name="panel">#0A1119</color>
+    <color name="panel_edge">#16222E</color>
+    <color name="arc_cyan">#00E5FF</color>
+    <color name="arc_cyan_dim">#0E5A66</color>
+    <color name="gold">#FFC857</color>
+    <color name="gold_dim">#6B4E1F</color>
+    <color name="ghost_white">#D6F4FF</color>
+    <color name="muted">#5E7A87</color>
+    <color name="danger">#FF5470</color>
+    <color name="user_bubble">#0E2A33</color>
+</resources>
