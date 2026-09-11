@@ -7,3 +7,7 @@ local.properties
 *.apk
 *.aab
 .DS_Store
+
+*.keystore
+.keystore-pass
+gradle.properties
