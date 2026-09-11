@@ -11,15 +11,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** Saved-conversation list. */
+data class HistoryState(val items: List<Conversation> = emptyList())
+
 class HistoryViewModel(private val conversations: ConversationRepo) : ViewModel() {
 
-    private val _items = MutableStateFlow<List<Conversation>>(emptyList())
-    val items: StateFlow<List<Conversation>> = _items.asStateFlow()
+    private val _state = MutableStateFlow(HistoryState())
+    val state: StateFlow<HistoryState> = _state.asStateFlow()
 
     fun refresh() {
         viewModelScope.launch {
-            _items.value = withContext(Dispatchers.IO) { conversations.list() }
+            val list = withContext(Dispatchers.IO) { conversations.list() }
+            _state.value = HistoryState(list)
         }
     }
 

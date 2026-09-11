@@ -9,145 +9,107 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="24dp">
 
         <TextView
-            style="@style/HudHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="UPLINK CONFIGURATION" />
-
-        <Button
-            android:id="@+id/omniRouteButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="USE OMNIROUTE PRESET (HOUSE LAN)" />
+            android:text="Settings"
+            android:textSize="28sp"
+            android:textColor="@color/cyan"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
 
         <TextView
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="ENDPOINT URL" />
+            android:text="Endpoint URL"
+            android:textSize="14sp"
+            android:textColor="@color/gold"
+            android:layout_marginBottom="4dp" />
 
         <EditText
-            android:id="@+id/endpointInput"
+            android:id="@+id/settingsEndpoint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:hint="https://api.openai.com/v1"
+            android:textSize="14sp"
+            android:textColor="@color/text_light"
+            android:textColorHint="@color/text_dim"
             android:background="@drawable/glass_input"
+            android:padding="12dp"
             android:inputType="textUri"
-            android:padding="14dp"
-            android:textColor="@color/ghost_white"
-            android:textColorHint="@color/muted"
-            android:textSize="15sp" />
+            android:layout_marginBottom="16dp" />
 
         <TextView
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="API KEY" />
-
-        <EditText
-            android:id="@+id/apiKeyInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:text="API Key"
+            android:textSize="14sp"
+            android:textColor="@color/gold"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/settingsApiKey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="sk-..."
+            android:textSize="14sp"
+            android:textColor="@color/text_light"
+            android:textColorHint="@color/text_dim"
             android:background="@drawable/glass_input"
+            android:padding="12dp"
             android:inputType="textPassword"
-            android:padding="14dp"
-            android:textColor="@color/ghost_white"
-            android:textColorHint="@color/muted"
-            android:textSize="15sp" />
+            android:layout_marginBottom="16dp" />
 
         <TextView
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="MODEL" />
-
-        <EditText
-            android:id="@+id/modelInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:text="Model"
+            android:textSize="14sp"
+            android:textColor="@color/gold"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/settingsModel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="gpt-4o-mini"
+            android:textSize="14sp"
+            android:textColor="@color/text_light"
+            android:textColorHint="@color/text_dim"
             android:background="@drawable/glass_input"
+            android:padding="12dp"
             android:inputType="text"
-            android:padding="14dp"
-            android:textColor="@color/ghost_white"
-            android:textColorHint="@color/muted"
-            android:textSize="15sp" />
+            android:layout_marginBottom="24dp" />
 
-        <TextView
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="SEARCH API BASE URL (OPTIONAL)" />
-
-        <EditText
-            android:id="@+id/searchEndpointInput"
+        <CheckBox
+            android:id="@+id/settingsVoiceOutput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/glass_input"
-            android:inputType="textUri"
-            android:padding="14dp"
-            android:textColor="@color/ghost_white"
-            android:textColorHint="@color/muted"
-            android:textSize="15sp" />
-
-        <TextView
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="SEARCH API KEY (OPTIONAL)" />
-
-        <EditText
-            android:id="@+id/searchApiKeyInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/glass_input"
-            android:inputType="textPassword"
-            android:padding="14dp"
-            android:textColor="@color/ghost_white"
-            android:textColorHint="@color/muted"
-            android:textSize="15sp" />
-
-        <TextView
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="VOICE OUTPUT" />
-
-        <Switch
-            android:id="@+id/ttsSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Speak replies aloud"
-            android:textColor="@color/ghost_white" />
+            android:text="Voice output (read replies aloud)"
+            android:textSize="16sp"
+            android:textColor="@color/text_light"
+            android:buttonTint="@color/cyan"
+            android:layout_marginBottom="24dp" />
 
         <Button
-            android:id="@+id/saveButton"
+            android:id="@+id/settingsPreset"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="SAVE UPLINK" />
+            android:text="OmniRoute Preset"
+            android:textColor="@color/void_black"
+            android:backgroundTint="@color/gold"
+            android:layout_marginBottom="12dp" />
 
-        <TextView
-            android:id="@+id/savedNote"
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/settingsSave"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:text="" />
+            android:text="SAVE"
+            android:textColor="@color/void_black"
+            android:backgroundTint="@color/cyan" />
+
     </LinearLayout>
 </ScrollView>

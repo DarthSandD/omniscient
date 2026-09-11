@@ -1,19 +1,25 @@
-# Omniscient v3 — the butler in the phone
+# Omniscient v4 — the butler in the phone
 
 Voice-first agentic assistant for Android. Speaks and types like a butler ("boss"),
 acts through 15 real device tools, shows its work live in a command terminal.
 
-## Architecture (clean layers, no God-files)
+> v4 is a from-zero rebuild (by Claude Code CLI, finished + verified by Hermes)
+> after v3 crashed on launch. Crash-safety rules: light `onCreate`, standard
+> `ViewModelProvider` (no reified/lazy delegates), null-safe views, permissions
+> only when the needing tool runs, no work in `Application.onCreate`. The
+> holographic orb view was deliberately left out of v4 — prime crash suspect,
+> returns once the foundation proves stable on-device.
+
+## Architecture (clean layers)
 
 ```
-ui/        screens — one Activity + one ViewModel each, orb view, voice wrappers
-  home/        HomeActivity + HomeViewModel (holographic core, quick orders)
-  chat/        ChatActivity + ChatViewModel (full session, glass cards)
+ui/        screens — one Activity + one ViewModel each, plain factory injection
+  home/        HomeActivity + HomeViewModel (status, quick order → chat, voice, nav)
+  chat/        ChatActivity + ChatViewModel (session, glass cards, voice, TTS)
   history/     HistoryActivity + HistoryViewModel (dossier of sessions)
   terminal/    TerminalActivity + TerminalViewModel (live tool-call log)
   settings/    SettingsActivity + SettingsViewModel (uplink config)
   onboarding/  OnboardingActivity + OnboardingViewModel (first run)
-  orb/         HoloOrbView (Canvas hologram: halo, scan sweep, particles)
   voice/       VoiceManager (SpeechRecognizer), TtsManager
 domain/      models, Persona (butler lines), AgentLog (event bus),
              repository interfaces, SendMessageUseCase (offline → agent loop)
@@ -22,7 +28,7 @@ data/        SettingsStore, FileConversations, FileMemory, OpenAiService,
              notify/ (notification-listener capture)
 ```
 
-`OmniApp` is the composition root; `OmniViewModels` factory injects collaborators.
+`OmniViewModelFactory` is the composition root (lazy deps, no casts).
 The agent loop lives in `domain/SendMessageUseCase` (max 5 rounds); the wire
 lives in `data/OpenAiService`. No org.json in domain.
 
@@ -36,8 +42,7 @@ lives in `data/OpenAiService`. No org.json in domain.
 - Endpoint settings + one-tap OmniRoute preset (house LAN, keyless)
 - Onboarding screen on first run (settings preserved across upgrades)
 - Command terminal: every user turn + tool call logged live via AgentLog
-- Butler persona: deterministic rotating acknowledgments, "boss" address,
-  voice (TTS) + text fallback on every screen
+- Butler persona: acknowledgments, "boss" address, voice (TTS) + text fallback
 
 ## Build
 
@@ -49,18 +54,17 @@ C:/Users/USER/gradle-8.5/bin/gradle assembleRelease   # signed; needs RELEASE_* 
                                                       # UNTRACKED local gradle.properties
 ```
 
+Do NOT set JAVA_HOME (system JDK is already correct; overriding breaks the build).
 Verify: `aapt dump badging app/build/outputs/apk/...apk` (+ `apksigner verify`
 for release). Secrets (`*.keystore`, `.keystore-pass`, local `gradle.properties`)
 are git-ignored and never committed.
 
-## References studied
+## References studied (v3)
 
 - VarsshanCoder/JARVIS-OS (Kotlin+FastAPI agent, memory, tool calling)
 - patil-shubham-dev/Jarvis-Ai (voice + automation, multi-agent)
 - lucadeg/opendroid (self-planning agent, glassmorphic design)
 - prashantshukla01/Jarvis_Ironman (holographic orb interface)
 
-Influence, not vendored code: on-device agent loop + memory (JARVIS-OS),
-terminal transparency + glass cards (opendroid), orb hero (Ironman).
-Accessibility-driven screen control (opendroid/Jarvis-Ai) was deliberately
-left out — high Play-policy risk, low payoff vs the tool API.
+Influence, not vendored code. Accessibility-driven screen control was
+deliberately left out — high Play-policy risk, low payoff vs the tool API.

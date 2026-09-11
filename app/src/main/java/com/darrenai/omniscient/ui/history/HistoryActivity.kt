@@ -2,36 +2,71 @@ package com.darrenai.omniscient.ui.history
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Gravity
-import android.widget.Button
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.BaseAdapter
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.darrenai.omniscient.R
+import com.darrenai.omniscient.domain.Conversation
+import com.darrenai.omniscient.ui.OmniViewModelFactory
 import com.darrenai.omniscient.ui.chat.ChatActivity
-import com.darrenai.omniscient.ui.omniViewModel
 import kotlinx.coroutines.launch
-import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
-/** Dossier: saved sessions. Tap to reopen, long-press to shred. */
+/** List of saved conversations (JSON files in internal storage). Tap to reopen, long-press to delete. */
 class HistoryActivity : AppCompatActivity() {
 
-    private val vm: HistoryViewModel by omniViewModel()
-    private lateinit var box: LinearLayout
-    private lateinit var emptyText: TextView
+    private lateinit var vm: HistoryViewModel
+    private var items: List<Conversation> = emptyList()
+    private lateinit var list: ListView
+    private lateinit var empty: TextView
+    private val adapter = HistoryAdapter()
+    private val dateFmt = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
-        box = findViewById(R.id.convBox)
-        emptyText = findViewById(R.id.emptyText)
-        findViewById<Button>(R.id.newConvButton).setOnClickListener {
-            startActivity(Intent(this, ChatActivity::class.java))
+
+        vm = ViewModelProvider(this, OmniViewModelFactory(application))[HistoryViewModel::class.java]
+
+        list = findViewById(R.id.historyList) ?: run { finish(); return }
+        empty = findViewById(R.id.historyEmpty) ?: run { finish(); return }
+
+        list.adapter = adapter
+        list.onItemClickListener = AdapterView.OnItemClickListener { _, _, pos, _ ->
+            val item = items.getOrNull(pos) ?: return@OnItemClickListener
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra(ChatActivity.EXTRA_CONVERSATION_ID, item.id)
+            startActivity(intent)
         }
+        list.onItemLongClickListener = AdapterView.OnItemLongClickListener { _, _, pos, _ ->
+            val item = items.getOrNull(pos) ?: return@OnItemLongClickListener false
+            AlertDialog.Builder(this)
+                .setTitle("Delete conversation?")
+                .setMessage("\"${item.title}\"")
+                .setPositiveButton("Delete") { _, _ -> vm.delete(item.id) }
+                .setNegativeButton("Cancel", null)
+                .show()
+            true
+        }
+
         lifecycleScope.launch {
-            vm.items.collect { render() }
+            vm.state.collect { state ->
+                items = state.items
+                empty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+                list.visibility = if (items.isEmpty()) View.GONE else View.VISIBLE
+                adapter.notifyDataSetChanged()
+            }
         }
     }
 
@@ -40,47 +75,30 @@ class HistoryActivity : AppCompatActivity() {
         vm.refresh()
     }
 
-    private fun render() {
-        val list = vm.items.value
-        box.removeAllViews()
-        emptyText.visibility = if (list.isEmpty()) TextView.VISIBLE else TextView.GONE
-        val fmt = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-        for (c in list) {
-            val card = LinearLayout(this).apply {
+    private inner class HistoryAdapter : BaseAdapter() {
+        override fun getCount() = items.size
+        override fun getItem(pos: Int) = items[pos]
+        override fun getItemId(pos: Int) = items[pos].id
+
+        override fun getView(pos: Int, convertView: View?, parent: ViewGroup): View {
+            val row = (convertView as? LinearLayout) ?: LinearLayout(this@HistoryActivity).apply {
                 orientation = LinearLayout.VERTICAL
-                setBackgroundResource(R.drawable.glass_assistant)
-                setPadding(28, 24, 28, 24)
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { setMargins(0, 0, 0, 12) }
-                isClickable = true
-                isFocusable = true
-                gravity = Gravity.START
+                setPadding(32, 24, 32, 24)
+                setBackgroundColor(ContextCompat.getColor(this@HistoryActivity, R.color.glass_bg))
             }
-            val title = TextView(this).apply {
-                text = c.title.ifBlank { "Session" }
-                setTextColor(0xFFD6F4FF.toInt())
+            row.removeAllViews()
+            val item = items[pos]
+            row.addView(TextView(this@HistoryActivity).apply {
+                text = item.title
                 textSize = 16f
-            }
-            val meta = TextView(this).apply {
-                text = "${c.messages.size} messages · ${fmt.format(Date(c.updatedAt))}"
-                setTextColor(0xFF5E7A87.toInt())
+                setTextColor(ContextCompat.getColor(this@HistoryActivity, R.color.cyan))
+            })
+            row.addView(TextView(this@HistoryActivity).apply {
+                text = "${item.messages.size} msgs • ${dateFmt.format(Date(item.updatedAt))}"
                 textSize = 12f
-            }
-            card.addView(title)
-            card.addView(meta)
-            card.setOnClickListener {
-                startActivity(
-                    Intent(this, ChatActivity::class.java)
-                        .putExtra(ChatActivity.EXTRA_ID, c.id)
-                )
-            }
-            card.setOnLongClickListener {
-                vm.delete(c.id)
-                true
-            }
-            box.addView(card)
+                setTextColor(ContextCompat.getColor(this@HistoryActivity, R.color.text_dim))
+            })
+            return row
         }
     }
 }

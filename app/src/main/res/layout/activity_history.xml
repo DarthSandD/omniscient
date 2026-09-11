@@ -2,41 +2,37 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/void_black"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/void_black">
 
     <TextView
-        style="@style/HudHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="D O S S I E R" />
-
-    <Button
-        android:id="@+id/newConvButton"
+        android:id="@+id/historyTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="OPEN NEW SESSION" />
+        android:text="Conversation History"
+        android:textSize="24sp"
+        android:textColor="@color/cyan"
+        android:textStyle="bold"
+        android:padding="16dp"
+        android:gravity="center" />
+
+    <ListView
+        android:id="@+id/historyList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@color/glass_bg"
+        android:dividerHeight="1dp" />
 
     <TextView
-        android:id="@+id/emptyText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="No sessions on record, boss."
-        android:textColor="@color/muted"
-        android:textSize="14sp" />
-
-    <ScrollView
+        android:id="@+id/historyEmpty"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="12dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="No conversations yet, boss."
+        android:textSize="16sp"
+        android:textColor="@color/text_dim"
+        android:gravity="center"
+        android:visibility="gone" />
 
-        <LinearLayout
-            android:id="@+id/convBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
 </LinearLayout>

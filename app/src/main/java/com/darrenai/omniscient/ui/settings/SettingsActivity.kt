@@ -2,67 +2,58 @@ package com.darrenai.omniscient.ui.settings
 
 import android.os.Bundle
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
-import android.widget.Switch
-import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.darrenai.omniscient.R
-import com.darrenai.omniscient.data.SettingsStore
-import com.darrenai.omniscient.ui.omniViewModel
+import com.darrenai.omniscient.ui.OmniViewModelFactory
 
-/** Uplink settings: endpoint URL, API key, model, OmniRoute preset, search API, voice toggle. */
+/** Endpoint, API key, model fields + save; one-tap OmniRoute preset; voice toggle. */
 class SettingsActivity : AppCompatActivity() {
 
-    private val vm: SettingsViewModel by omniViewModel()
+    private lateinit var vm: SettingsViewModel
+    private lateinit var endpointField: EditText
+    private lateinit var apiKeyField: EditText
+    private lateinit var modelField: EditText
+    private lateinit var voiceToggle: CheckBox
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        val endpoint = findViewById<EditText>(R.id.endpointInput)
-        val apiKey = findViewById<EditText>(R.id.apiKeyInput)
-        val model = findViewById<EditText>(R.id.modelInput)
-        val searchEndpoint = findViewById<EditText>(R.id.searchEndpointInput)
-        val searchKey = findViewById<EditText>(R.id.searchApiKeyInput)
-        val ttsSwitch = findViewById<Switch>(R.id.ttsSwitch)
-        val note = findViewById<TextView>(R.id.savedNote)
+        vm = ViewModelProvider(this, OmniViewModelFactory(application))[SettingsViewModel::class.java]
 
-        fun refresh(s: SettingsState = vm.load()) {
-            endpoint.setText(s.endpoint)
-            apiKey.setText(s.apiKey)
-            model.setText(s.model)
-            searchEndpoint.setText(s.searchEndpoint)
-            searchKey.setText(s.searchKey)
-            ttsSwitch.isChecked = s.speakReplies
-        }
-        refresh()
-        endpoint.hint = SettingsStore.DEFAULT_ENDPOINT
-        apiKey.hint = "sk-… (or x for OmniRoute)"
-        model.hint = SettingsStore.DEFAULT_MODEL
-        searchEndpoint.hint = "https://… (empty = web search off)"
+        endpointField = findViewById(R.id.settingsEndpoint) ?: run { finish(); return }
+        apiKeyField = findViewById(R.id.settingsApiKey) ?: run { finish(); return }
+        modelField = findViewById(R.id.settingsModel) ?: run { finish(); return }
+        voiceToggle = findViewById(R.id.settingsVoiceOutput) ?: run { finish(); return }
 
-        fun flash(msg: String) {
-            note.text = msg
-            note.postDelayed({ note.text = "" }, 2500)
-        }
+        val state = vm.load()
+        endpointField.setText(state.endpoint)
+        apiKeyField.setText(state.apiKey)
+        modelField.setText(state.model)
+        voiceToggle.isChecked = state.speakReplies
 
-        findViewById<Button>(R.id.omniRouteButton).setOnClickListener {
-            refresh(vm.applyPreset())
-            flash("◆ OMNIROUTE PRESET APPLIED, BOSS")
-        }
-
-        findViewById<Button>(R.id.saveButton).setOnClickListener {
+        findViewById<Button>(R.id.settingsSave)?.setOnClickListener {
             vm.save(
-                SettingsState(
-                    endpoint = endpoint.text.toString().trim().trimEnd('/'),
-                    apiKey = apiKey.text.toString().trim(),
-                    model = model.text.toString().trim(),
-                    searchEndpoint = searchEndpoint.text.toString().trim().trimEnd('/'),
-                    searchKey = searchKey.text.toString().trim(),
-                    speakReplies = ttsSwitch.isChecked
-                )
+                endpoint = endpointField.text.toString(),
+                apiKey = apiKeyField.text.toString(),
+                model = modelField.text.toString(),
+                speakReplies = voiceToggle.isChecked
             )
-            flash("◆ UPLINK SAVED")
+            Toast.makeText(this, "Settings saved, boss.", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+
+        findViewById<Button>(R.id.settingsPreset)?.setOnClickListener {
+            vm.applyOmniRoutePreset()
+            val refreshed = vm.load()
+            endpointField.setText(refreshed.endpoint)
+            apiKeyField.setText(refreshed.apiKey)
+            modelField.setText(refreshed.model)
+            Toast.makeText(this, "OmniRoute preset applied, boss.", Toast.LENGTH_SHORT).show()
         }
     }
 }

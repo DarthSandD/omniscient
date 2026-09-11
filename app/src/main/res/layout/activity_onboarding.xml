@@ -8,60 +8,48 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="28dp">
+        android:padding="32dp"
+        android:gravity="center_horizontal">
 
         <TextView
-            style="@style/HudHeader"
+            android:id="@+id/onboardTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/tagline" />
+            android:text="Omniscient"
+            android:textSize="48sp"
+            android:textColor="@color/cyan"
+            android:textStyle="bold"
+            android:layout_marginTop="48dp" />
 
         <TextView
-            android:id="@+id/welcomeText"
-            android:layout_width="match_parent"
+            android:id="@+id/onboardSubtitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/glass_assistant"
-            android:gravity="center"
-            android:padding="24dp"
-            android:text=""
-            android:textColor="@color/ghost_white"
-            android:textSize="16sp" />
+            android:text="Your AI Butler"
+            android:textSize="20sp"
+            android:textColor="@color/gold"
+            android:layout_marginTop="8dp" />
 
         <TextView
-            android:id="@+id/howText"
+            android:id="@+id/onboardDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/terminal_bg"
-            android:padding="20dp"
-            android:text=""
-            android:textColor="@color/terminal_green"
-            android:textSize="13sp" />
-
-        <Button
-            android:id="@+id/presetButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="USE OMNIROUTE PRESET (HOUSE LAN)" />
+            android:text="Welcome, boss. I'm Omniscient — part Jarvis, part Alfred, all yours.\n\nI can:\n• Control your phone (flashlight, Wi-Fi, Bluetooth, apps)\n• Set alarms and timers\n• Make calls and send SMS (with your permission)\n• Read notifications\n• Remember your preferences\n• Search the web\n• And much more\n\nJust type or speak your orders. I'll handle the rest.\n\nTap BEGIN when you're ready."
+            android:textSize="16sp"
+            android:textColor="@color/text_light"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginTop="32dp" />
 
         <Button
             android:id="@+id/beginButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="BEGIN SERVICE" />
+            android:text="BEGIN"
+            android:textSize="18sp"
+            android:textColor="@color/void_black"
+            android:backgroundTint="@color/cyan"
+            android:layout_marginTop="48dp" />
 
-        <TextView
-            android:id="@+id/onboardNote"
-            style="@style/HudStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="" />
     </LinearLayout>
 </ScrollView>

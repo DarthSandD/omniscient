@@ -10,7 +10,7 @@ import java.util.Locale
 
 /**
  * App-wide agent transcript. Every user turn and every tool call lands here,
- * so the command-terminal screen shows the agent's work live.
+ * so the terminal screen shows the agent's work live.
  * In-memory ring buffer (300 lines) — the phone, not the cloud, owns it.
  */
 object AgentLog {

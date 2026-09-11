@@ -7,7 +7,6 @@ import android.content.Intent
 import android.hardware.camera2.CameraManager
 import android.location.LocationManager
 import android.net.Uri
-import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
 import android.provider.AlarmClock
@@ -33,13 +32,17 @@ import kotlin.coroutines.resume
 private suspend fun askConfirm(activity: AppCompatActivity, title: String, message: String): Boolean =
     withContext(Dispatchers.Main) {
         suspendCancellableCoroutine { cont ->
-            AlertDialog.Builder(activity)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("Yes") { _, _ -> if (cont.isActive) cont.resume(true) }
-                .setNegativeButton("No") { _, _ -> if (cont.isActive) cont.resume(false) }
-                .setOnCancelListener { if (cont.isActive) cont.resume(false) }
-                .show()
+            try {
+                AlertDialog.Builder(activity)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("Yes") { _, _ -> if (cont.isActive) cont.resume(true) }
+                    .setNegativeButton("No") { _, _ -> if (cont.isActive) cont.resume(false) }
+                    .setOnCancelListener { if (cont.isActive) cont.resume(false) }
+                    .show()
+            } catch (e: Exception) {
+                if (cont.isActive) cont.resume(false)
+            }
         }
     }
 
@@ -56,24 +59,25 @@ class DeviceTools(private val settings: SettingsStore, private val memory: Memor
         return runArgs(activity, name, args)
     }
 
-    suspend fun runArgs(activity: AppCompatActivity, name: String, args: JSONObject): String = when (name) {
-        "get_time" -> getTime()
-        "get_battery" -> getBattery(activity)
-        "get_location" -> getLocation(activity)
-        "open_app" -> openApp(activity, args.optString("app"))
-        "set_alarm" -> setAlarm(activity, args)
-        "set_timer" -> setTimer(activity, args)
-        "toggle_flashlight" -> toggleFlashlight(activity, args.optString("state"))
-        "toggle_wifi" -> toggleWifi(activity, args.optString("state"))
-        "toggle_bluetooth" -> toggleBluetooth(activity, args.optString("state"))
-        "make_call" -> makeCall(activity, args)
-        "send_sms" -> sendSms(activity, args)
-        "read_notifications" -> readNotifications(activity)
-        "remember" -> memory.remember(args.optString("fact"))
-        "forget" -> memory.forget(args.optString("fact"))
-        "web_search" -> webSearch(args.optString("query"))
-        else -> "Unknown tool: $name"
-    }
+    suspend fun runArgs(activity: AppCompatActivity, name: String, args: JSONObject): String =
+        when (name) {
+            "get_time" -> getTime()
+            "get_battery" -> getBattery(activity)
+            "get_location" -> getLocation(activity)
+            "open_app" -> openApp(activity, args.optString("app"))
+            "set_alarm" -> setAlarm(activity, args)
+            "set_timer" -> setTimer(activity, args)
+            "toggle_flashlight" -> toggleFlashlight(activity, args.optString("state"))
+            "toggle_wifi" -> toggleWifi(activity, args.optString("state"))
+            "toggle_bluetooth" -> toggleBluetooth(activity, args.optString("state"))
+            "make_call" -> makeCall(activity, args)
+            "send_sms" -> sendSms(activity, args)
+            "read_notifications" -> readNotifications(activity)
+            "remember" -> memory.remember(args.optString("fact"))
+            "forget" -> memory.forget(args.optString("fact"))
+            "web_search" -> webSearch(args.optString("query"))
+            else -> "Unknown tool: $name"
+        }
 
     private fun getTime(): String {
         val fmt = SimpleDateFormat("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.getDefault())
@@ -98,7 +102,9 @@ class DeviceTools(private val settings: SettingsStore, private val memory: Memor
             val loc = lm?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 ?: lm?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             if (loc == null) "No cached location fix (GPS off or never locked). This is coarse, may be stale."
-            else "Coarse last-known location: %.4f, %.4f (accuracy ~%.0fm, age unknown).".format(loc.latitude, loc.longitude, loc.accuracy)
+            else "Coarse last-known location: %.4f, %.4f (accuracy ~%.0fm, age unknown).".format(
+                loc.latitude, loc.longitude, loc.accuracy
+            )
         } catch (e: SecurityException) {
             "Location blocked: ${e.message}"
         }
@@ -114,7 +120,8 @@ class DeviceTools(private val settings: SettingsStore, private val memory: Memor
             ?: apps.firstOrNull { it.activityInfo.packageName.lowercase().contains(q.replace(" ", "")) }
             ?: return "No installed app matching \"$query\" found, boss."
         val pkg = match.activityInfo.packageName
-        val intent = pm.getLaunchIntentForPackage(pkg) ?: return "Found ${match.loadLabel(pm)} but it has no launch entry."
+        val intent = pm.getLaunchIntentForPackage(pkg)
+            ?: return "Found ${match.loadLabel(pm)} but it has no launch entry."
         withContext(Dispatchers.Main) { activity.startActivity(intent) }
         return "Opened ${match.loadLabel(pm)}, boss."
     }
@@ -176,10 +183,10 @@ class DeviceTools(private val settings: SettingsStore, private val memory: Memor
         }
         return try {
             @Suppress("DEPRECATION")
-            val wm = activity.applicationContext.getSystemService(WifiManager::class.java)
+            val wm = activity.applicationContext.getSystemService(Context.WIFI_SERVICE) as? android.net.wifi.WifiManager
             val on = state.equals("on", ignoreCase = true)
             @Suppress("DEPRECATION")
-            val ok = wm?.setWifiEnabled(on) ?: false
+            val ok = wm?.isWifiEnabled != on && wm?.setWifiEnabled(on) == true
             if (ok) "Wi-Fi turned ${if (on) "ON" else "OFF"}, boss." else "Wi-Fi toggle failed on this device."
         } catch (e: Exception) {
             "Wi-Fi toggle failed: ${e.message}"
@@ -215,12 +222,16 @@ class DeviceTools(private val settings: SettingsStore, private val memory: Memor
         if (!args.optBoolean("confirm", false)) {
             return "CONFIRM_REQUIRED: placing a call to $number needs your explicit yes, boss. Ask them, then re-call with confirm=true."
         }
-        if (!askConfirm(activity, "Place call?", "Call $number now?")) return "Call cancelled — standing by, boss."
+        if (!askConfirm(activity, "Place call?", "Call $number now?")) {
+            return "Call cancelled — standing by, boss."
+        }
         if (!PermissionGate.ensure(activity, Manifest.permission.CALL_PHONE)) {
             return "Call permission denied, boss — I cannot place the call."
         }
         return try {
-            withContext(Dispatchers.Main) { activity.startActivity(Intent(Intent.ACTION_CALL, Uri.parse("tel:$number"))) }
+            withContext(Dispatchers.Main) {
+                activity.startActivity(Intent(Intent.ACTION_CALL, Uri.parse("tel:$number")))
+            }
             "Calling $number, boss…"
         } catch (e: Exception) {
             "Call failed: ${e.message}"
@@ -234,7 +245,9 @@ class DeviceTools(private val settings: SettingsStore, private val memory: Memor
         if (!args.optBoolean("confirm", false)) {
             return "CONFIRM_REQUIRED: sending an SMS to $to needs your explicit yes, boss. Read the text back, then re-call with confirm=true."
         }
-        if (!askConfirm(activity, "Send SMS?", "To $to:\n\n$message")) return "SMS cancelled — standing by, boss."
+        if (!askConfirm(activity, "Send SMS?", "To $to:\n\n$message")) {
+            return "SMS cancelled — standing by, boss."
+        }
         if (!PermissionGate.ensure(activity, Manifest.permission.SEND_SMS)) {
             return "SMS permission denied, boss — I cannot send it."
         }

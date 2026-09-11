@@ -25,7 +25,7 @@ interface ChatService {
 
 /** Tool specs + system prompt. Implemented by the data layer's ToolCatalog. */
 interface ToolRegistry {
-    /** JSON array string of OpenAI-compatible function specs, or null-less. */
+    /** JSON array string of OpenAI-compatible function specs. */
     fun specsJson(): String
     fun systemPrompt(facts: List<String>): String
 }

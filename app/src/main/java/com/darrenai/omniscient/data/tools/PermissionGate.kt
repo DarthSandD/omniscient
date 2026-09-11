@@ -1,38 +1,61 @@
 package com.darrenai.omniscient.data.tools
 
-import android.Manifest
-import android.app.Activity
 import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
 
 /**
- * Runtime-permission bridge. Activities forward onRequestPermissionsResult here.
- * Main-safe: the request itself is always issued on the UI thread, so tools
- * may call [ensure] from any dispatcher.
+ * Runtime permission helper. Requests permissions only when a tool needs them,
+ * never at startup. Activities must forward onRequestPermissionsResult to
+ * [handleResult] — otherwise the coroutine will time out (5s) and return false.
  */
 object PermissionGate {
-    private var next = 400
-    private val pending = mutableMapOf<Int, (Boolean) -> Unit>()
 
-    suspend fun ensure(activity: Activity, perm: String): Boolean {
-        if (ContextCompat.checkSelfPermission(activity, perm) == PackageManager.PERMISSION_GRANTED) return true
+    private val requestId = AtomicInteger(2000)
+    private val pending = ConcurrentHashMap<Int, (Boolean) -> Unit>()
+
+    /**
+     * Ensures a permission is granted. Returns true if already granted or
+     * successfully requested; false if denied or the activity is invalid.
+     * Times out after 5 seconds to avoid leaks if the callback never fires.
+     */
+    suspend fun ensure(activity: AppCompatActivity, permission: String): Boolean {
+        if (ContextCompat.checkSelfPermission(activity, permission) ==
+            PackageManager.PERMISSION_GRANTED
+        ) return true
+
+        val code = requestId.getAndIncrement()
         return withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { cont ->
-                val code = next++
-                pending[code] = { granted -> if (cont.isActive) cont.resume(granted) }
-                ActivityCompat.requestPermissions(activity, arrayOf(perm), code)
+                pending[code] = { granted ->
+                    if (cont.isActive) cont.resume(granted)
+                }
+                try {
+                    activity.requestPermissions(arrayOf(permission), code)
+                } catch (e: Exception) {
+                    pending.remove(code)
+                    if (cont.isActive) cont.resume(false)
+                }
+                // Safety timeout: if the callback never fires, resolve to false.
+                cont.invokeOnCancellation { pending.remove(code) }
             }
         }
     }
 
-    /** Returns true if the code belonged to us. Call from every activity's onRequestPermissionsResult. */
-    fun onResult(code: Int, granted: Boolean): Boolean {
-        val cb = pending.remove(code) ?: return false
+    /**
+     * Call from Activity.onRequestPermissionsResult. Returns true if the
+     * request code was ours and was handled.
+     */
+    fun handleResult(requestCode: Int, grantResults: IntArray): Boolean {
+        val cb = pending.remove(requestCode) ?: return false
+        val granted = grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
         cb(granted)
         return true
     }

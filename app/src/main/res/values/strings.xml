@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Omniscient</string>
-    <string name="tagline">O M N I S C I E N T</string>
-    <string name="status_idle">SYSTEMS STANDBY — AT YOUR SERVICE, BOSS</string>
-    <string name="status_listening">LISTENING, BOSS…</string>
-    <string name="status_thinking">CONSULTING THE UPLINK…</string>
-    <string name="status_acting">EXECUTING — WATCH THE TERMINAL</string>
-    <string name="status_speaking">REPORTING, BOSS…</string>
-    <string name="hint_text">Give an order, boss…</string>
-    <string name="cd_mic">Voice input</string>
 </resources>

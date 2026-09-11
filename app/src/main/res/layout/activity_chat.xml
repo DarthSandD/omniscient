@@ -2,88 +2,64 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/void_black"
     android:orientation="vertical"
-    android:padding="16dp">
-
-    <TextView
-        style="@style/HudHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ACTIVE SESSION" />
+    android:background="@color/void_black">
 
     <ScrollView
         android:id="@+id/chatScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:id="@+id/messagesBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical"
+            android:padding="16dp" />
+
     </ScrollView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="@color/glass_bg">
 
         <EditText
             android:id="@+id/chatInput"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:hint="Type your order…"
+            android:textSize="16sp"
+            android:textColor="@color/text_light"
+            android:textColorHint="@color/text_dim"
             android:background="@drawable/glass_input"
-            android:hint="@string/hint_text"
-            android:inputType="textMultiLine"
-            android:padding="14dp"
-            android:textColor="@color/ghost_white"
-            android:textColorHint="@color/muted"
-            android:textSize="16sp" />
-
-        <ImageButton
-            android:id="@+id/chatMic"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/mic_ring"
-            android:contentDescription="@string/cd_mic"
-            android:padding="13dp"
-            android:src="@drawable/ic_mic" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
+            android:padding="12dp"
+            android:inputType="text"
+            android:maxLines="4" />
 
         <Button
             android:id="@+id/chatSend"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:text="SEND" />
+            android:text="SEND"
+            android:textColor="@color/void_black"
+            android:backgroundTint="@color/cyan"
+            android:layout_marginStart="8dp" />
 
-        <Button
-            android:id="@+id/chatSpeak"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_weight="1"
-            android:text="READ ALOUD" />
+        <ImageButton
+            android:id="@+id/chatVoice"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_mic"
+            android:background="@drawable/mic_ring"
+            android:contentDescription="Voice input" />
+
     </LinearLayout>
 
-    <Button
-        android:id="@+id/chatTerminal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="WATCH THE TERMINAL" />
 </LinearLayout>

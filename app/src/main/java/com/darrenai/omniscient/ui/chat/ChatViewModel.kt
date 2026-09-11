@@ -1,6 +1,5 @@
 package com.darrenai.omniscient.ui.chat
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.darrenai.omniscient.data.tools.DeviceTools
@@ -11,6 +10,7 @@ import com.darrenai.omniscient.domain.MemoryRepo
 import com.darrenai.omniscient.domain.Message
 import com.darrenai.omniscient.domain.SendMessageUseCase
 import com.darrenai.omniscient.domain.titleFor
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,35 +38,32 @@ class ChatViewModel(
 
     private lateinit var conv: Conversation
 
-    fun open(convId: Long) {
-        if (this::conv.isInitialized) return
-        viewModelScope.launch {
-            val loaded = withContext(Dispatchers.IO) {
-                if (convId > 0) conversations.load(convId) else null
-            } ?: conversations.new()
-            conv = loaded
-            _state.update { it.copy(messages = conv.messages.toList()) }
-        }
+    fun open(id: Long) {
+        conv = conversations.load(id) ?: conversations.new()
+        _state.update { it.copy(messages = conv.messages.toList()) }
     }
 
-    fun lastAssistantReply(): String? =
-        _state.value.messages.lastOrNull { it.role == "assistant" }?.content
+    fun send(activity: AppCompatActivity, text: String) {
+        if (text.isBlank()) return
+        val userMsg = Message("user", text)
+        conv.messages.add(userMsg)
+        _state.update { it.copy(messages = conv.messages.toList(), busy = true) }
 
-    fun send(activity: AppCompatActivity, prompt: String) {
-        val clean = prompt.trim()
-        if (clean.isEmpty() || _state.value.busy || !this::conv.isInitialized) return
         viewModelScope.launch {
-            conv.messages.add(Message("user", clean))
-            _state.update { it.copy(messages = conv.messages.toList(), busy = true) }
-            val res = sendMessage.run(
+            val facts = memory.facts()
+            val result = sendMessage.run(
                 history = conv.messages.toList(),
-                facts = memory.facts(),
-                offline = { OfflineIntents.tryHandle(activity, tools, clean) },
-                exec = { name, args -> tools.run(activity, name, args) }
+                facts = facts,
+                offline = { OfflineIntents.tryHandle(activity, tools, text) },
+                exec = { name, argsJson -> tools.run(activity, name, argsJson) }
             )
-            conv.messages.add(Message("assistant", res.text))
-            conv = conversations.save(conv.copy(title = titleFor(conv.messages)))
+            val assistantMsg = Message("assistant", result.text)
+            conv.messages.add(assistantMsg)
+            conv.title = titleFor(conv.messages)
+            withContext(Dispatchers.IO) { conversations.save(conv) }
             _state.update { it.copy(messages = conv.messages.toList(), busy = false, replySeq = it.replySeq + 1) }
         }
     }
+
+    fun getId(): Long = if (::conv.isInitialized) conv.id else -1L
 }

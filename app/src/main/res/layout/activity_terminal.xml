@@ -2,62 +2,46 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/void_black"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/void_black">
 
     <TextView
-        style="@style/HudHeader"
-        android:layout_width="wrap_content"
+        android:id="@+id/terminalTitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="C O M M A N D   T E R M I N A L" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Every tool call, as it happens."
-        android:textColor="@color/muted"
-        android:textSize="12sp" />
+        android:text="Terminal Log"
+        android:textSize="24sp"
+        android:textColor="@color/gold"
+        android:textStyle="bold"
+        android:padding="16dp"
+        android:gravity="center" />
 
     <ScrollView
         android:id="@+id/terminalScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
         android:layout_weight="1"
-        android:background="@drawable/terminal_bg"
-        android:padding="12dp">
+        android:fillViewport="true">
 
         <TextView
             android:id="@+id/terminalLog"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="— terminal clear. Give an order and watch the work, boss. —"
-            android:textColor="@color/terminal_green"
-            android:textSize="12sp" />
+            android:fontFamily="monospace"
+            android:textSize="12sp"
+            android:textColor="@color/cyan"
+            android:padding="12dp"
+            android:background="@drawable/terminal_bg" />
+
     </ScrollView>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/terminalClear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal">
+        android:text="CLEAR LOG"
+        android:textColor="@color/void_black"
+        android:backgroundTint="@color/gold"
+        android:layout_margin="12dp" />
 
-        <Button
-            android:id="@+id/clearButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:text="CLEAR" />
-
-        <Button
-            android:id="@+id/backButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_weight="1"
-            android:text="BACK" />
-    </LinearLayout>
 </LinearLayout>

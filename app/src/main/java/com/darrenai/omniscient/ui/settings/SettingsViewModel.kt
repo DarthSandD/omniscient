@@ -4,37 +4,29 @@ import androidx.lifecycle.ViewModel
 import com.darrenai.omniscient.data.SettingsStore
 
 data class SettingsState(
-    val endpoint: String = "",
-    val apiKey: String = "",
-    val model: String = "",
-    val searchEndpoint: String = "",
-    val searchKey: String = "",
-    val speakReplies: Boolean = true
+    val endpoint: String,
+    val apiKey: String,
+    val model: String,
+    val speakReplies: Boolean
 )
 
-/** Uplink settings: endpoint, key, model, OmniRoute preset, search API, voice. */
 class SettingsViewModel(private val settings: SettingsStore) : ViewModel() {
 
     fun load(): SettingsState = SettingsState(
         endpoint = settings.endpoint,
         apiKey = settings.apiKey,
         model = settings.model,
-        searchEndpoint = settings.searchEndpoint,
-        searchKey = settings.searchKey,
         speakReplies = settings.speakReplies
     )
 
-    fun save(s: SettingsState) {
-        settings.endpoint = s.endpoint.ifBlank { SettingsStore.DEFAULT_ENDPOINT }
-        settings.apiKey = s.apiKey
-        settings.model = s.model.ifBlank { SettingsStore.DEFAULT_MODEL }
-        settings.searchEndpoint = s.searchEndpoint
-        settings.searchKey = s.searchKey
-        settings.speakReplies = s.speakReplies
+    fun save(endpoint: String, apiKey: String, model: String, speakReplies: Boolean) {
+        settings.endpoint = endpoint
+        settings.apiKey = apiKey
+        settings.model = model
+        settings.speakReplies = speakReplies
     }
 
-    fun applyPreset(): SettingsState {
+    fun applyOmniRoutePreset() {
         settings.applyOmniRoutePreset()
-        return load()
     }
 }

@@ -1,18 +1,15 @@
 package com.darrenai.omniscient.domain
 
-/** Core models. UI, data and transport types all map through these — no God-objects. */
+/** Core models: UI, data, and transport types all map through these. */
 
 data class Message(val role: String, val content: String)
 
 data class Conversation(
     val id: Long,
-    val title: String,
+    var title: String,
     val messages: MutableList<Message>,
-    val updatedAt: Long
+    var updatedAt: Long
 )
-
-/** Orb hero states. ACTING = a device tool is executing right now. */
-enum class OrbState { IDLE, LISTENING, THINKING, ACTING, SPEAKING }
 
 /** One function call requested by the model. argsJson is the raw arguments object. */
 data class ToolCall(val id: String, val name: String, val argsJson: String)
